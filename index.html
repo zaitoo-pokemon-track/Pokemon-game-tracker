@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Pokémon Tracker"/>
+<title>Pokémon Tracker</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;padding:0;background:#07070f;font-family:'Courier New',monospace;color:#e0e0ff;overscroll-behavior:none;}
+  input,textarea,button{font-family:'Courier New',monospace;outline:none;}
+  textarea{resize:vertical;}
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-track{background:#111;}
+  ::-webkit-scrollbar-thumb{background:#333;border-radius:2px;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script type="text/babel">
+const {useState,useEffect,useCallback}=React;
+
+const BOX={
+  green:"https://archives.bulbagarden.net/media/upload/thumb/c/ce/Pok%C3%A9mon_Green_JP_boxart.png/250px-Pok%C3%A9mon_Green_JP_boxart.png",
+  red:"https://archives.bulbagarden.net/media/upload/thumb/3/3b/Pokemon_Red_EN_boxart.png/250px-Pokemon_Red_EN_boxart.png",
+  blue:"https://archives.bulbagarden.net/media/upload/thumb/e/e9/Pokemon_Blue_EN_boxart.png/250px-Pokemon_Blue_EN_boxart.png",
+  yellow:"https://archives.bulbagarden.net/media/upload/thumb/b/b3/Pokemon_Yellow_EN_boxart.png/250px-Pokemon_Yellow_EN_boxart.png",
+  gold:"https://archives.bulbagarden.net/media/upload/thumb/a/a8/Pokemon_Gold_EN_boxart.png/250px-Pokemon_Gold_EN_boxart.png",
+  silver:"https://archives.bulbagarden.net/media/upload/thumb/d/d6/Pokemon_Silver_EN_boxart.png/250px-Pokemon_Silver_EN_boxart.png",
+  crystal:"https://archives.bulbagarden.net/media/upload/thumb/1/1f/Pokemon_Crystal_EN_boxart.png/250px-Pokemon_Crystal_EN_boxart.png",
+  ruby:"https://archives.bulbagarden.net/media/upload/thumb/3/30/Pokemon_Ruby_EN_boxart.png/250px-Pokemon_Ruby_EN_boxart.png",
+  sapphire:"https://archives.bulbagarden.net/media/upload/thumb/5/55/Pokemon_Sapphire_EN_boxart.png/250px-Pokemon_Sapphire_EN_boxart.png",
+  emerald:"https://archives.bulbagarden.net/media/upload/thumb/8/85/Pokemon_Emerald_EN_boxart.png/250px-Pokemon_Emerald_EN_boxart.png",
+  firered:"https://archives.bulbagarden.net/media/upload/thumb/9/9f/Pokemon_FireRed_EN_boxart.png/250px-Pokemon_FireRed_EN_boxart.png",
+  leafgreen:"https://archives.bulbagarden.net/media/upload/thumb/2/23/Pokemon_LeafGreen_EN_boxart.png/250px-Pokemon_LeafGreen_EN_boxart.png",
+  diamond:"https://archives.bulbagarden.net/media/upload/thumb/0/0a/Pokemon_Diamond_EN_boxart.png/250px-Pokemon_Diamond_EN_boxart.png",
+  pearl:"https://archives.bulbagarden.net/media/upload/thumb/a/a7/Pokemon_Pearl_EN_boxart.png/250px-Pokemon_Pearl_EN_boxart.png",
+  platinum:"https://archives.bulbagarden.net/media/upload/thumb/a/af/Pokemon_Platinum_EN_boxart.png/250px-Pokemon_Platinum_EN_boxart.png",
+  heartgold:"https://archives.bulbagarden.net/media/upload/thumb/e/e9/Pokemon_HeartGold_EN_boxart.png/250px-Pokemon_HeartGold_EN_boxart.png",
+  soulsilver:"https://archives.bulbagarden.net/media/upload/thumb/f/f7/Pokemon_SoulSilver_EN_boxart.png/250px-Pokemon_SoulSilver_EN_boxart.png",
+  black:"https://archives.bulbagarden.net/media/upload/thumb/e/e9/Pokemon_Black_EN_boxart.png/250px-Pokemon_Black_EN_boxart.png",
+  white:"https://archives.bulbagarden.net/media/upload/thumb/c/c1/Pokemon_White_EN_boxart.png/250px-Pokemon_White_EN_boxart.png",
+  black2:"https://archives.bulbagarden.net/media/upload/thumb/0/0c/Pokemon_Black_2_EN_boxart.png/250px-Pokemon_Black_2_EN_boxart.png",
+  white2:"https://archives.bulbagarden.net/media/upload/thumb/e/e0/Pokemon_White_2_EN_boxart.png/250px-Pokemon_White_2_EN_boxart.png",
+  x:"https://archives.bulbagarden.net/media/upload/thumb/a/a6/Pokemon_X_EN_boxart.png/250px-Pokemon_X_EN_boxart.png",
+  y:"https://archives.bulbagarden.net/media/upload/thumb/7/77/Pokemon_Y_EN_boxart.png/250px-Pokemon_Y_EN_boxart.png",
+  omegaruby:"https://archives.bulbagarden.net/media/upload/thumb/8/8d/Pokemon_Omega_Ruby_EN_boxart.png/250px-Pokemon_Omega_Ruby_EN_boxart.png",
+  alphasapphire:"https://archives.bulbagarden.net/media/upload/thumb/c/c9/Pokemon_Alpha_Sapphire_EN_boxart.png/250px-Pokemon_Alpha_Sapphire_EN_boxart.png",
+  sun:"https://archives.bulbagarden.net/media/upload/thumb/3/37/Pokemon_Sun_EN_boxart.png/250px-Pokemon_Sun_EN_boxart.png",
+  moon:"https://archives.bulbagarden.net/media/upload/thumb/a/a5/Pokemon_Moon_EN_boxart.png/250px-Pokemon_Moon_EN_boxart.png",
+  ultrasun:"https://archives.bulbagarden.net/media/upload/thumb/d/d5/Pokemon_Ultra_Sun_EN_boxart.png/250px-Pokemon_Ultra_Sun_EN_boxart.png",
+  ultramoon:"https://archives.bulbagarden.net/media/upload/thumb/3/3e/Pokemon_Ultra_Moon_EN_boxart.png/250px-Pokemon_Ultra_Moon_EN_boxart.png",
+  sword:"https://archives.bulbagarden.net/media/upload/thumb/4/4f/Pokemon_Sword_EN_boxart.png/250px-Pokemon_Sword_EN_boxart.png",
+  shield:"https://archives.bulbagarden.net/media/upload/thumb/8/8d/Pokemon_Shield_EN_boxart.png/250px-Pokemon_Shield_EN_boxart.png",
+  brilliantdiamond:"https://archives.bulbagarden.net/media/upload/thumb/5/56/Pokemon_Brilliant_Diamond_EN_boxart.png/250px-Pokemon_Brilliant_Diamond_EN_boxart.png",
+  shiningpearl:"https://archives.bulbagarden.net/media/upload/thumb/3/3e/Pokemon_Shining_Pearl_EN_boxart.png/250px-Pokemon_Shining_Pearl_EN_boxart.png",
+  legendsarceus:"https://archives.bulbagarden.net/media/upload/thumb/9/9a/Pokemon_Legends_Arceus_EN_boxart.png/250px-Pokemon_Legends_Arceus_EN_boxart.png",
+  scarlet:"https://archives.bulbagarden.net/media/upload/thumb/1/1e/Pokemon_Scarlet_EN_boxart.png/250px-Pokemon_Scarlet_EN_boxart.png",
+  violet:"https://archives.bulbagarden.net/media/upload/thumb/5/5c/Pokemon_Violet_EN_boxart.png/250px-Pokemon_Violet_EN_boxart.png",
+  legendsza:"https://archives.bulbagarden.net/media/upload/thumb/c/c0/Pokemon_Legends_ZA_EN_boxart.png/250px-Pokemon_Legends_ZA_EN_boxart.png",
+};
+
+const GAMES=[
+  {id:"green",name:"Green",gen:1,color:"#44AA44",badges:["Boulder","Cascade","Thunder","Rainbow","Soul","Marsh","Volcano","Earth"],dex:151,year:1996,msrp:80,jpOnly:true},
+  {id:"red",name:"Red",gen:1,color:"#E3350D",badges:["Boulder","Cascade","Thunder","Rainbow","Soul","Marsh","Volcano","Earth"],dex:151,year:1996,msrp:45},
+  {id:"blue",name:"Blue",gen:1,color:"#0066CC",badges:["Boulder","Cascade","Thunder","Rainbow","Soul","Marsh","Volcano","Earth"],dex:151,year:1996,msrp:40},
+  {id:"yellow",name:"Yellow",gen:1,color:"#F7C52B",badges:["Boulder","Cascade","Thunder","Rainbow","Soul","Marsh","Volcano","Earth"],dex:151,year:1998,msrp:35},
+  {id:"gold",name:"Gold",gen:2,color:"#DAA520",badges:["Zephyr","Hive","Plain","Fog","Storm","Mineral","Glacier","Rising","Boulder","Cascade","Thunder","Rainbow","Soul","Marsh","Volcano","Earth"],dex:251,year:1999,msrp:55},
+  {id:"silver",name:"Silver",gen:2,color:"#AAAACC",badges:["Zephyr","Hive","Plain","Fog","Storm","Mineral","Glacier","Rising","Boulder","Cascade","Thunder","Rainbow","Soul","Marsh","Volcano","Earth"],dex:251,year:1999,msrp:50},
+  {id:"crystal",name:"Crystal",gen:2,color:"#4FC3F7",badges:["Zephyr","Hive","Plain","Fog","Storm","Mineral","Glacier","Rising","Boulder","Cascade","Thunder","Rainbow","Soul","Marsh","Volcano","Earth"],dex:251,year:2000,msrp:80},
+  {id:"ruby",name:"Ruby",gen:3,color:"#CC0000",badges:["Stone","Knuckle","Dynamo","Heat","Balance","Feather","Mind","Rain"],dex:386,year:2002,msrp:30},
+  {id:"sapphire",name:"Sapphire",gen:3,color:"#0044AA",badges:["Stone","Knuckle","Dynamo","Heat","Balance","Feather","Mind","Rain"],dex:386,year:2002,msrp:30},
+  {id:"emerald",name:"Emerald",gen:3,color:"#00A86B",badges:["Stone","Knuckle","Dynamo","Heat","Balance","Feather","Mind","Rain"],dex:386,year:2004,msrp:75},
+  {id:"firered",name:"FireRed",gen:3,color:"#FF6600",badges:["Boulder","Cascade","Thunder","Rainbow","Soul","Marsh","Volcano","Earth"],dex:386,year:2004,msrp:55},
+  {id:"leafgreen",name:"LeafGreen",gen:3,color:"#33BB33",badges:["Boulder","Cascade","Thunder","Rainbow","Soul","Marsh","Volcano","Earth"],dex:386,year:2004,msrp:55},
+  {id:"diamond",name:"Diamond",gen:4,color:"#9999FF",badges:["Coal","Forest","Cobble","Fen","Relic","Mine","Icicle","Beacon"],dex:493,year:2006,msrp:40},
+  {id:"pearl",name:"Pearl",gen:4,color:"#FF99CC",badges:["Coal","Forest","Cobble","Fen","Relic","Mine","Icicle","Beacon"],dex:493,year:2006,msrp:40},
+  {id:"platinum",name:"Platinum",gen:4,color:"#CCCCDD",badges:["Coal","Forest","Cobble","Fen","Relic","Mine","Icicle","Beacon"],dex:493,year:2008,msrp:90},
+  {id:"heartgold",name:"HeartGold",gen:4,color:"#FFD700",badges:["Zephyr","Hive","Plain","Fog","Storm","Mineral","Glacier","Rising","Boulder","Cascade","Thunder","Rainbow","Soul","Marsh","Volcano","Earth"],dex:493,year:2009,msrp:120},
+  {id:"soulsilver",name:"SoulSilver",gen:4,color:"#BBBBEE",badges:["Zephyr","Hive","Plain","Fog","Storm","Mineral","Glacier","Rising","Boulder","Cascade","Thunder","Rainbow","Soul","Marsh","Volcano","Earth"],dex:493,year:2009,msrp:120},
+  {id:"black",name:"Black",gen:5,color:"#555577",badges:["Trio","Basic","Insect","Bolt","Quake","Jet","Freeze","Legend"],dex:649,year:2010,msrp:35},
+  {id:"white",name:"White",gen:5,color:"#AABBCC",badges:["Trio","Basic","Insect","Bolt","Quake","Jet","Freeze","Legend"],dex:649,year:2010,msrp:35},
+  {id:"black2",name:"Black 2",gen:5,color:"#333355",badges:["Trio","Basic","Insect","Bolt","Quake","Jet","Freeze","Legend"],dex:649,year:2012,msrp:50},
+  {id:"white2",name:"White 2",gen:5,color:"#99BBDD",badges:["Trio","Basic","Insect","Bolt","Quake","Jet","Freeze","Legend"],dex:649,year:2012,msrp:50},
+  {id:"x",name:"X",gen:6,color:"#0055CC",badges:["Bug","Cliff","Rumble","Plant","Voltage","Fairy","Psychic","Iceberg"],dex:721,year:2013,msrp:30},
+  {id:"y",name:"Y",gen:6,color:"#CC0055",badges:["Bug","Cliff","Rumble","Plant","Voltage","Fairy","Psychic","Iceberg"],dex:721,year:2013,msrp:30},
+  {id:"omegaruby",name:"Omega Ruby",gen:6,color:"#CC2200",badges:["Stone","Knuckle","Dynamo","Heat","Balance","Feather","Mind","Rain"],dex:721,year:2014,msrp:45},
+  {id:"alphasapphire",name:"Alpha Sapphire",gen:6,color:"#0055AA",badges:["Stone","Knuckle","Dynamo","Heat","Balance","Feather","Mind","Rain"],dex:721,year:2014,msrp:45},
+  {id:"sun",name:"Sun",gen:7,color:"#FF8C00",badges:["Melemele","Akala","Ula'ula","Poni"],dex:802,year:2016,msrp:30},
+  {id:"moon",name:"Moon",gen:7,color:"#6644AA",badges:["Melemele","Akala","Ula'ula","Poni"],dex:802,year:2016,msrp:30},
+  {id:"ultrasun",name:"Ultra Sun",gen:7,color:"#FF6600",badges:["Melemele","Akala","Ula'ula","Poni"],dex:807,year:2017,msrp:40},
+  {id:"ultramoon",name:"Ultra Moon",gen:7,color:"#553399",badges:["Melemele","Akala","Ula'ula","Poni"],dex:807,year:2017,msrp:40},
+  {id:"sword",name:"Sword",gen:8,color:"#0055AA",badges:["Turffield","Hulbury","Motostoke","Stow-on-Side","Ballonlea","Circhester","Spikemuth","Hammerlocke"],dex:898,year:2019,msrp:45},
+  {id:"shield",name:"Shield",gen:8,color:"#CC0000",badges:["Turffield","Hulbury","Motostoke","Stow-on-Side","Ballonlea","Circhester","Spikemuth","Hammerlocke"],dex:898,year:2019,msrp:45},
+  {id:"brilliantdiamond",name:"Brilliant Diamond",gen:8,color:"#8866FF",badges:["Coal","Forest","Cobble","Fen","Relic","Mine","Icicle","Beacon"],dex:898,year:2021,msrp:50},
+  {id:"shiningpearl",name:"Shining Pearl",gen:8,color:"#FF88CC",badges:["Coal","Forest","Cobble","Fen","Relic","Mine","Icicle","Beacon"],dex:898,year:2021,msrp:50},
+  {id:"legendsarceus",name:"Legends: Arceus",gen:8,color:"#DD9900",badges:["Kleavor","Lilligant","Arcanine","Electrode","Avalugg","Palina"],dex:242,year:2022,msrp:55},
+  {id:"scarlet",name:"Scarlet",gen:9,color:"#CC2200",badges:["Cortondo","Artazon","Levincia","Cascarrafa","Medali","Montenevera","Alfornada","Glaseado"],dex:1010,year:2022,msrp:55},
+  {id:"violet",name:"Violet",gen:9,color:"#6600CC",badges:["Cortondo","Artazon","Levincia","Cascarrafa","Medali","Montenevera","Alfornada","Glaseado"],dex:1010,year:2022,msrp:55},
+  {id:"legendsza",name:"Legends: Z-A",gen:9,color:"#2266AA",badges:[],dex:0,year:2025,msrp:60},
+];
+
+const GEN_COLORS={1:"#E3350D",2:"#DAA520",3:"#CC0000",4:"#9999FF",5:"#555577",6:"#0055CC",7:"#FF8C00",8:"#0055AA",9:"#CC2200"};
+const LS_KEY="pkmn_tracker_v4";
+const LS_BIN="pkmn_bin_id";
+
+// LocalStorage helpers as fallback
+const lsLoad=()=>{try{const r=localStorage.getItem(LS_KEY);return r?JSON.parse(r):{games:{},jpGames:{},limited:[]};}catch{return{games:{},jpGames:{},limited:[]}}};
+const lsSave=(d)=>{try{localStorage.setItem(LS_KEY,JSON.stringify(d));}catch{}};
+
+// JSONBin API
+const JBURL="https://api.jsonbin.io/v3";
+const JB_KEY="$2a$10$placeholder"; // replaced at setup
+
+async function jbCreate(apiKey,data){
+  const r=await fetch(JBURL+"/b",{method:"POST",headers:{"Content-Type":"application/json","X-Master-Key":apiKey,"X-Bin-Name":"pokemon-tracker","X-Collection-Name":"tracker"},body:JSON.stringify(data)});
+  const j=await r.json();
+  return j.metadata?.id||null;
+}
+async function jbRead(apiKey,binId){
+  const r=await fetch(JBURL+"/b/"+binId+"/latest",{headers:{"X-Master-Key":apiKey}});
+  const j=await r.json();
+  return j.record||null;
+}
+async function jbUpdate(apiKey,binId,data){
+  await fetch(JBURL+"/b/"+binId,{method:"PUT",headers:{"Content-Type":"application/json","X-Master-Key":apiKey},body:JSON.stringify(data)});
+}
+const defEN=()=>({owned:false,wishlist:false,badges:[],dex:0,shinies:[],notes:"",price:0,hasBox:false,natDex:0});
+const defJP=()=>({owned:false,wishlist:false,hasBox:false,price:0,jpPrice:0,notes:"",badges:[],dex:0,shinies:[],natDex:0});
+
+function BoxArt({id,name,color,size=54}){
+  const[err,setErr]=useState(false);
+  if(err||!BOX[id])return(
+    <div style={{width:size,height:size*1.3,background:`linear-gradient(135deg,${color}33,${color}11)`,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",border:`1px solid ${color}44`,flexShrink:0}}>
+      <span style={{fontSize:9,color,textAlign:"center",padding:3,lineHeight:1.2}}>{name}</span>
+    </div>
+  );
+  return <img src={BOX[id]} alt={name} onError={()=>setErr(true)} style={{width:size,height:size*1.3,objectFit:"cover",borderRadius:6,border:`1px solid ${color}44`,flexShrink:0,background:"#111"}}/>;
+}
+
+function Check({v,onChange,label,color="#00FF88",small=false}){
+  return(
+    <div onClick={onChange} style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer",userSelect:"none"}}>
+      <div style={{width:small?14:16,height:small?14:16,borderRadius:3,border:`2px solid ${v?color:"#444"}`,background:v?color+"33":"transparent",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+        {v&&<span style={{color,fontSize:small?9:11,lineHeight:1}}>✓</span>}
+      </div>
+      {label&&<span style={{fontSize:small?10:12,color:v?color:"#666"}}>{label}</span>}
+    </div>
+  );
+}
+
+function App(){
+  const[store,setStore]=useState(lsLoad);
+  const[tab,setTab]=useState("en");
+  const[modal,setModal]=useState(null);
+  const[mTab,setMTab]=useState("badges");
+  const[filterGen,setFilterGen]=useState(0);
+  const[showOwned,setShowOwned]=useState(true);
+  const[showMissing,setShowMissing]=useState(true);
+  const[shinyIn,setShinyIn]=useState({name:"",count:1});
+  const[addLimOpen,setAddLimOpen]=useState(false);
+  const[newLim,setNewLim]=useState({name:"",year:"",notes:"",price:0,owned:false,imgUrl:""});
+  const[setupOpen,setSetupOpen]=useState(false);
+  const[apiKey,setApiKey]=useState(()=>localStorage.getItem("pkmn_apikey")||"");
+  const[binId,setBinId]=useState(()=>localStorage.getItem(LS_BIN)||"");
+  const[syncStatus,setSyncStatus]=useState("idle"); // idle | saving | saved | error | loading
+  const saveTimer=React.useRef(null);
+
+  // Load from JSONBin on startup if configured
+  useEffect(()=>{
+    const ak=localStorage.getItem("pkmn_apikey");
+    const bid=localStorage.getItem(LS_BIN);
+    if(ak&&bid){
+      setSyncStatus("loading");
+      jbRead(ak,bid).then(data=>{
+        if(data){setStore(data);lsSave(data);}
+        setSyncStatus("idle");
+      }).catch(()=>setSyncStatus("idle"));
+    }
+  },[]);
+
+  // Auto-save to JSONBin 2 seconds after any change
+  useEffect(()=>{
+    lsSave(store);
+    const ak=localStorage.getItem("pkmn_apikey");
+    const bid=localStorage.getItem(LS_BIN);
+    if(!ak||!bid)return;
+    if(saveTimer.current)clearTimeout(saveTimer.current);
+    setSyncStatus("saving");
+    saveTimer.current=setTimeout(()=>{
+      jbUpdate(ak,bid,store).then(()=>setSyncStatus("saved")).catch(()=>setSyncStatus("error"));
+      setTimeout(()=>setSyncStatus("idle"),2000);
+    },1500);
+  },[store]);
+
+  const connectJSONBin=async(key)=>{
+    if(!key.trim())return;
+    setSyncStatus("saving");
+    try{
+      const existing=localStorage.getItem(LS_BIN);
+      if(existing){
+        // Try to read existing bin
+        const data=await jbRead(key,existing);
+        if(data){setStore(data);lsSave(data);}
+        localStorage.setItem("pkmn_apikey",key);
+        setApiKey(key);
+        setSyncStatus("saved");
+        setSetupOpen(false);
+        setTimeout(()=>setSyncStatus("idle"),2000);
+        return;
+      }
+      // Create new bin
+      const id=await jbCreate(key,store);
+      if(id){
+        localStorage.setItem("pkmn_apikey",key);
+        localStorage.setItem(LS_BIN,id);
+        setApiKey(key);setBinId(id);
+        setSyncStatus("saved");
+        setSetupOpen(false);
+        setTimeout(()=>setSyncStatus("idle"),2000);
+      }else{setSyncStatus("error");}
+    }catch(e){setSyncStatus("error");}
+  };
+
+  const getEN=(id)=>({...defEN(),...(store.games[id]||{})});
+  const getJP=(id)=>({...defJP(),...(store.jpGames[id]||{})});
+  const updEN=(id,u)=>setStore(p=>({...p,games:{...p.games,[id]:{...getEN(id),...u}}}));
+  const updJP=(id,u)=>setStore(p=>({...p,jpGames:{...p.jpGames,[id]:{...getJP(id),...u}}}));
+  const isOwnedEN=(id)=>{const g=getEN(id);return g.owned||g.badges.length>0||g.dex>0||(g.shinies&&g.shinies.length>0)||g.price>0;};
+  const isOwnedJP=(id)=>{const g=getJP(id);return g.owned||g.badges.length>0||g.dex>0||(g.shinies&&g.shinies.length>0)||g.price>0;};
+
+  const toggleBadge=(id,badge,type)=>{
+    const g=type==="jp"?getJP(id):getEN(id);
+    const badges=g.badges.includes(badge)?g.badges.filter(b=>b!==badge):[...g.badges,badge];
+    type==="jp"?updJP(id,{badges}):updEN(id,{badges});
+  };
+  const addShiny=(id,type)=>{
+    if(!shinyIn.name.trim())return;
+    const g=type==="jp"?getJP(id):getEN(id);
+    const shinies=[...(g.shinies||[]),{name:shinyIn.name,count:parseInt(shinyIn.count)||1,date:new Date().toLocaleDateString("en-GB")}];
+    type==="jp"?updJP(id,{shinies}):updEN(id,{shinies});
+    setShinyIn({name:"",count:1});
+  };
+  const rmShiny=(id,idx,type)=>{
+    const g=type==="jp"?getJP(id):getEN(id);
+    const shinies=g.shinies.filter((_,i)=>i!==idx);
+    type==="jp"?updJP(id,{shinies}):updEN(id,{shinies});
+  };
+  const addLim=()=>{
+    if(!newLim.name.trim())return;
+    setStore(p=>({...p,limited:[...(p.limited||[]),{...newLim,id:Date.now().toString()}]}));
+    setNewLim({name:"",year:"",notes:"",price:0,owned:false,imgUrl:""});
+    setAddLimOpen(false);
+  };
+  const updLim=(id,u)=>setStore(p=>({...p,limited:p.limited.map(l=>l.id===id?{...l,...u}:l)}));
+  const rmLim=(id)=>setStore(p=>({...p,limited:p.limited.filter(l=>l.id!==id)}));
+
+  const calcStats=()=>{
+    let enO=0,jpO=0,lO=0,bdg=0,shn=0,enP=0,jpP=0;
+    GAMES.forEach(g=>{
+      if(isOwnedEN(g.id))enO++;if(isOwnedJP(g.id))jpO++;
+      const e=getEN(g.id),j=getJP(g.id);
+      bdg+=e.badges.length+j.badges.length;
+      shn+=(e.shinies||[]).reduce((s,x)=>s+(x.count||1),0)+(j.shinies||[]).reduce((s,x)=>s+(x.count||1),0);
+      enP+=e.price||0;jpP+=j.jpPrice||0;
+    });
+    (store.limited||[]).forEach(l=>{if(l.owned)lO++;});
+    return{enO,jpO,lO,bdg,shn,enP,jpP};
+  };
+  const st=calcStats();
+  const gens=[...new Set(GAMES.map(g=>g.gen))];
+
+  const mg=modal?GAMES.find(g=>g.id===modal.id):null;
+  const mIsJP=modal&&modal.type==="jp";
+  const mgd=modal&&mg?(mIsJP?getJP(mg.id):getEN(mg.id)):null;
+  const mOwned=modal&&mg?(mIsJP?isOwnedJP(mg.id):isOwnedEN(mg.id)):false;
+  const mUpd=(u)=>{if(!modal||!mg)return;mIsJP?updJP(mg.id,u):updEN(mg.id,u);};
+
+  const filteredGames=(ownedFn,type)=>{
+    let list=filterGen===0?GAMES:GAMES.filter(g=>g.gen===filterGen);
+    if(type==="en")list=list.filter(g=>!g.jpOnly);
+    if(!showOwned)list=list.filter(g=>!ownedFn(g.id));
+    if(!showMissing)list=list.filter(g=>ownedFn(g.id));
+    return list;
+  };
+
+  const S={
+    app:{minHeight:"100vh",background:"linear-gradient(135deg,#07070f,#0d1225,#07070f)"},
+    hdr:{background:"linear-gradient(90deg,#12082a,#081525,#12082a)",borderBottom:"2px solid #E3350D",padding:"12px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100,boxShadow:"0 4px 24px #E3350D22"},
+    overlay:{position:"fixed",inset:0,background:"#000000dd",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:12},
+    modal:{background:"linear-gradient(135deg,#0f1525,#1a0f2e)",borderRadius:16,width:"100%",maxWidth:580,maxHeight:"90vh",overflowY:"auto"},
+  };
+
+  return(
+    <div style={S.app}>
+      {/* Header */}
+      <div style={S.hdr}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" stroke="#E3350D" strokeWidth="2" fill="white"/><path d="M1 12h22" stroke="#E3350D" strokeWidth="2"/><circle cx="12" cy="12" r="3" fill="#E3350D"/><circle cx="12" cy="12" r="1.5" fill="white"/></svg>
+          <div>
+            <div style={{fontSize:14,fontWeight:"bold",color:"#fff",letterSpacing:2}}>POKÉMON TRACKER</div>
+            <div style={{fontSize:7,color:"#E3350D",letterSpacing:3}}>COLLECTION & PROGRESS</div>
+          </div>
+        </div>
+        <div style={{display:"flex",gap:12}}>
+          {[{l:"EN",v:st.enO,c:"#4FC3F7"},{l:"🇯🇵",v:st.jpO,c:"#FF4488"},{l:"⭐",v:st.lO,c:"#FFD700"},{l:"✨",v:st.shn,c:"#C0C0FF"}].map(x=>(
+            <div key={x.l} style={{textAlign:"center"}}>
+              <div style={{fontSize:13,fontWeight:"bold",color:x.c}}>{x.v}</div>
+              <div style={{fontSize:8,color:"#444"}}>{x.l}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          {syncStatus==="loading"&&<span style={{fontSize:9,color:"#4FC3F7"}}>⏳ Loading...</span>}
+          {syncStatus==="saving"&&<span style={{fontSize:9,color:"#FFD700"}}>💾 Saving...</span>}
+          {syncStatus==="saved"&&<span style={{fontSize:9,color:"#00FF88"}}>✓ Saved!</span>}
+          {syncStatus==="error"&&<span style={{fontSize:9,color:"#FF4444"}}>⚠ Error</span>}
+          <button onClick={()=>setSetupOpen(true)} style={{background:binId?"#00FF8833":"#E3350D",border:`1px solid ${binId?"#00FF88":"#E3350D"}`,color:binId?"#00FF88":"#fff",padding:"5px 9px",borderRadius:8,cursor:"pointer",fontSize:9,fontWeight:"bold",whiteSpace:"nowrap"}}>
+            {binId?"☁ ON":"☁ SETUP"}
+          </button>
+        </div>
+      </div>
+
+      {/* Setup Modal */}
+      {setupOpen&&(
+        <div style={{position:"fixed",inset:0,background:"#000000ee",zIndex:300,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={()=>setSetupOpen(false)}>
+          <div style={{background:"#0f1525",border:"2px solid #4FC3F7",borderRadius:16,width:"100%",maxWidth:420,padding:20}} onClick={e=>e.stopPropagation()}>
+            <div style={{fontSize:15,fontWeight:"bold",color:"#4FC3F7",marginBottom:4}}>☁ Auto-Save Setup</div>
+            <div style={{fontSize:11,color:"#888",marginBottom:16,lineHeight:1.6}}>
+              Connect to <strong style={{color:"#fff"}}>JSONBin.io</strong> for free automatic cloud saving. Your data will sync instantly on every device.
+            </div>
+            {!binId&&<div style={{fontSize:11,color:"#aaa",marginBottom:12,lineHeight:1.8}}>
+              <div>1. Go to <span style={{color:"#4FC3F7"}}>jsonbin.io</span> → create free account</div>
+              <div>2. Click <strong style={{color:"#fff"}}>API Keys</strong> in the menu</div>
+              <div>3. Copy your <strong style={{color:"#fff"}}>Master Key</strong> → paste below</div>
+            </div>}
+            {binId&&<div style={{background:"#00FF8811",border:"1px solid #00FF8844",borderRadius:8,padding:"8px 12px",fontSize:10,color:"#00FF88",marginBottom:12}}>
+              ✓ Connected! Your data auto-saves every time you make a change.
+            </div>}
+            <div style={{fontSize:10,color:"#666",marginBottom:6}}>Your JSONBin Master Key:</div>
+            <input
+              value={apiKey}
+              onChange={e=>setApiKey(e.target.value)}
+              placeholder="$2a$10$..."
+              style={{width:"100%",background:"#0a0a1a",border:"1px solid #333",color:"#e0e0ff",padding:"10px 12px",borderRadius:8,fontSize:12,boxSizing:"border-box",marginBottom:12}}
+            />
+            {syncStatus==="error"&&<div style={{color:"#FF4444",fontSize:10,marginBottom:8}}>⚠ Could not connect. Check your API key.</div>}
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>connectJSONBin(apiKey)} style={{flex:1,background:"#4FC3F7",border:"none",color:"#000",padding:"10px",borderRadius:8,cursor:"pointer",fontSize:12,fontWeight:"bold"}}>
+                {binId?"Reconnect":"Connect & Save"}
+              </button>
+              <button onClick={()=>setSetupOpen(false)} style={{background:"none",border:"1px solid #333",color:"#666",padding:"10px 16px",borderRadius:8,cursor:"pointer",fontSize:11}}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Game Modal */}
+      {modal&&mg&&mgd&&(
+        <div style={S.overlay} onClick={()=>setModal(null)}>
+          <div style={{...S.modal,border:`2px solid ${mg.color}`,boxShadow:`0 0 40px ${mg.color}44`}} onClick={e=>e.stopPropagation()}>
+            {/* Top */}
+            <div style={{display:"flex",gap:12,padding:"14px 16px",borderBottom:`1px solid ${mg.color}33`,background:`linear-gradient(90deg,${mg.color}18,transparent)`}}>
+              <BoxArt id={mg.id} name={mg.name} color={mg.color} size={68}/>
+              <div style={{flex:1}}>
+                <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+                  <span style={{fontSize:15,fontWeight:"bold",color:mg.color}}>Pokémon {mg.name}</span>
+                  {mIsJP&&<span>🇯🇵</span>}
+                </div>
+                <div style={{fontSize:9,color:"#666",marginBottom:8}}>
+                  Gen {mg.gen} · {mg.year} · {mg.dex>0?`${mg.dex} Pokémon`:"No Pokédex"}
+                  {mg.jpOnly&&<span style={{color:"#FF4488",marginLeft:6}}>🇯🇵 Japan Exclusive</span>}
+                </div>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                  <button onClick={()=>{if(mOwned)mUpd({owned:false,badges:[],dex:0,shinies:[],price:0,notes:""});else mUpd({owned:true});}}
+                    style={{background:mOwned?"#00FF8822":"#ffffff11",border:`1px solid ${mOwned?"#00FF88":"#333"}`,color:mOwned?"#00FF88":"#666",padding:"4px 8px",borderRadius:6,cursor:"pointer",fontSize:9}}>
+                    {mOwned?"✓ OWNED":"+ ADD"}
+                  </button>
+                  {!mOwned&&<button onClick={()=>mUpd({wishlist:!mgd.wishlist})}
+                    style={{background:mgd.wishlist?"#AA88FF22":"#ffffff11",border:`1px solid ${mgd.wishlist?"#AA88FF":"#333"}`,color:mgd.wishlist?"#AA88FF":"#666",padding:"4px 8px",borderRadius:6,cursor:"pointer",fontSize:9}}>
+                    {mgd.wishlist?"🎯 Wishlisted":"🎯 Wishlist"}
+                  </button>}
+                  <button onClick={()=>setModal(null)} style={{background:"none",border:`1px solid ${mg.color}`,color:mg.color,width:26,height:26,borderRadius:"50%",cursor:"pointer",fontSize:14,marginLeft:"auto"}}>×</button>
+                </div>
+              </div>
+            </div>
+            {/* Box toggle */}
+            <div style={{padding:"8px 16px",borderBottom:"1px solid #111"}}>
+              <Check v={mgd.hasBox} onChange={()=>mUpd({hasBox:!mgd.hasBox})} label="📦 Has physical box" color="#AA88FF" small/>
+            </div>
+            {/* Tabs */}
+            <div style={{display:"flex",borderBottom:"1px solid #111",padding:"0 16px",overflowX:"auto"}}>
+              {[{id:"badges",label:"🏅 Badges"},{id:"pokedex",label:"📖 Pokédex"},{id:"natdex",label:"🌍 Nat. Dex"},{id:"shinies",label:"✨ Shinies"},{id:"price",label:"💶 Price"}].map(t=>(
+                <button key={t.id} onClick={()=>setMTab(t.id)} style={{background:"none",border:"none",borderBottom:mTab===t.id?`2px solid ${mg.color}`:"2px solid transparent",color:mTab===t.id?mg.color:"#555",padding:"8px 10px",cursor:"pointer",fontSize:9,letterSpacing:1,whiteSpace:"nowrap"}}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+            <div style={{padding:16}}>
+              {/* Badges */}
+              {mTab==="badges"&&(mg.badges.length===0
+                ?<div style={{color:"#333",textAlign:"center",padding:20,fontSize:11}}>No gym badges for this game.</div>
+                :<>
+                  <div style={{fontSize:10,color:"#666",marginBottom:10}}>{mgd.badges.length}/{mg.badges.length} badges earned</div>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10}}>
+                    {mg.badges.map(b=>(
+                      <div key={b} onClick={()=>toggleBadge(mg.id,b,modal.type)} style={{textAlign:"center",cursor:"pointer"}}>
+                        <div style={{width:28,height:28,borderRadius:"50%",margin:"0 auto",background:mgd.badges.includes(b)?mg.color:"#1e1e2e",border:`2px solid ${mgd.badges.includes(b)?mg.color:"#2a2a2a"}`,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:mgd.badges.includes(b)?`0 0 8px ${mg.color}66`:"none",fontSize:12}}>
+                          {mgd.badges.includes(b)&&"✦"}
+                        </div>
+                        <div style={{fontSize:8,color:mgd.badges.includes(b)?mg.color:"#444",marginTop:3}}>{b}</div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+              {/* Regional Dex */}
+              {mTab==="pokedex"&&(mg.dex===0
+                ?<div style={{color:"#333",textAlign:"center",padding:20,fontSize:11}}>No regional Pokédex for this game.</div>
+                :<>
+                  <div style={{fontSize:10,color:"#666",marginBottom:10}}>Regional Pokédex (max {mg.dex})</div>
+                  <div style={{display:"flex",gap:10,alignItems:"center",marginBottom:10}}>
+                    <input type="number" min={0} max={mg.dex} value={mgd.dex||0}
+                      onChange={e=>mUpd({dex:Math.min(mg.dex,Math.max(0,parseInt(e.target.value)||0))})}
+                      style={{background:"#0a0a1a",border:`1px solid ${mg.color}`,color:mg.color,padding:"7px",borderRadius:8,fontSize:20,width:90,textAlign:"center"}}/>
+                    <div style={{flex:1}}>
+                      <div style={{background:"#1a1a2e",borderRadius:6,height:10,overflow:"hidden"}}>
+                        <div style={{width:`${((mgd.dex||0)/mg.dex)*100}%`,height:"100%",background:mg.color}}/>
+                      </div>
+                      <div style={{fontSize:9,color:"#555",marginTop:3}}>{Math.round(((mgd.dex||0)/mg.dex)*100)}% complete</div>
+                    </div>
+                  </div>
+                  {(mgd.dex||0)===mg.dex&&<div style={{color:"#FFD700",textAlign:"center",fontSize:11}}>🏆 REGIONAL DEX COMPLETE!</div>}
+                </>
+              )}
+              {/* National Dex */}
+              {mTab==="natdex"&&(
+                <>
+                  <div style={{fontSize:10,color:"#666",marginBottom:10}}>National Pokédex (max 1025)</div>
+                  <div style={{display:"flex",gap:10,alignItems:"center",marginBottom:10}}>
+                    <input type="number" min={0} max={1025} value={mgd.natDex||0}
+                      onChange={e=>mUpd({natDex:Math.min(1025,Math.max(0,parseInt(e.target.value)||0))})}
+                      style={{background:"#0a0a1a",border:"1px solid #FFD700",color:"#FFD700",padding:"7px",borderRadius:8,fontSize:20,width:90,textAlign:"center"}}/>
+                    <div style={{flex:1}}>
+                      <div style={{background:"#1a1a2e",borderRadius:6,height:10,overflow:"hidden"}}>
+                        <div style={{width:`${((mgd.natDex||0)/1025)*100}%`,height:"100%",background:"#FFD700"}}/>
+                      </div>
+                      <div style={{fontSize:9,color:"#555",marginTop:3}}>{Math.round(((mgd.natDex||0)/1025)*100)}% of all 1025 Pokémon</div>
+                    </div>
+                  </div>
+                  {(mgd.natDex||0)>=1025&&<div style={{color:"#FFD700",textAlign:"center",fontSize:11}}>🌟 NATIONAL DEX COMPLETE!</div>}
+                </>
+              )}
+              {/* Shinies */}
+              {mTab==="shinies"&&(
+                <>
+                  <div style={{display:"flex",gap:6,marginBottom:12}}>
+                    <input placeholder="Pokémon name..." value={shinyIn.name} onChange={e=>setShinyIn(p=>({...p,name:e.target.value}))}
+                      onKeyDown={e=>e.key==="Enter"&&addShiny(mg.id,modal.type)}
+                      style={{flex:1,background:"#0a0a1a",border:"1px solid #333",color:"#e0e0ff",padding:"7px 10px",borderRadius:8,fontSize:11}}/>
+                    <input type="number" min={1} value={shinyIn.count} onChange={e=>setShinyIn(p=>({...p,count:e.target.value}))}
+                      style={{width:48,background:"#0a0a1a",border:"1px solid #333",color:"#e0e0ff",padding:"7px",borderRadius:8,textAlign:"center"}}/>
+                    <button onClick={()=>addShiny(mg.id,modal.type)} style={{background:mg.color,border:"none",color:"#fff",padding:"7px 12px",borderRadius:8,cursor:"pointer",fontSize:16}}>+</button>
+                  </div>
+                  {(mgd.shinies||[]).length===0
+                    ?<div style={{color:"#333",textAlign:"center",padding:16,fontSize:11}}>No shinies yet ✨</div>
+                    :(mgd.shinies||[]).map((sh,i)=>(
+                      <div key={i} style={{display:"flex",alignItems:"center",justifyContent:"space-between",background:"#ffffff05",border:"1px solid #1e1e2e",borderRadius:8,padding:"6px 10px",marginBottom:5}}>
+                        <span style={{fontSize:11}}>⭐ <span style={{color:"#FFD700"}}>{sh.name}</span>{sh.count>1&&<span style={{color:"#555"}}> ×{sh.count}</span>}</span>
+                        <div style={{display:"flex",gap:6,alignItems:"center"}}>
+                          <span style={{color:"#444",fontSize:9}}>{sh.date}</span>
+                          <button onClick={()=>rmShiny(mg.id,i,modal.type)} style={{background:"none",border:"none",color:"#555",cursor:"pointer",fontSize:14}}>×</button>
+                        </div>
+                      </div>
+                    ))
+                  }
+                </>
+              )}
+              {/* Price */}
+              {mTab==="price"&&(
+                <div>
+                  <div style={{fontSize:10,color:"#666",marginBottom:8}}>Purchase price (€)</div>
+                  <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:10}}>
+                    <span style={{color:"#00FF88",fontSize:16}}>€</span>
+                    <input type="number" min={0} value={mgd.price||0} onChange={e=>mUpd({price:parseFloat(e.target.value)||0})}
+                      style={{background:"#0a0a1a",border:"1px solid #00FF88",color:"#00FF88",padding:"7px",borderRadius:8,fontSize:18,width:100}}/>
+                  </div>
+                  {mIsJP&&<>
+                    <div style={{fontSize:10,color:"#666",marginBottom:8}}>Japanese price (¥)</div>
+                    <div style={{display:"flex",gap:8,alignItems:"center",marginBottom:10}}>
+                      <span style={{color:"#FF4488",fontSize:16}}>¥</span>
+                      <input type="number" min={0} value={mgd.jpPrice||0} onChange={e=>mUpd({jpPrice:parseFloat(e.target.value)||0})}
+                        style={{background:"#0a0a1a",border:"1px solid #FF4488",color:"#FF4488",padding:"7px",borderRadius:8,fontSize:18,width:120}}/>
+                    </div>
+                  </>}
+                  <div style={{background:"#ffffff05",border:"1px solid #1e1e2e",borderRadius:8,padding:10,fontSize:10,color:"#555",marginBottom:10}}>
+                    <div>📦 Original MSRP: <span style={{color:"#888"}}>€{mg.msrp}</span></div>
+                    <div style={{marginTop:3}}>📅 Released: <span style={{color:"#888"}}>{mg.year}</span></div>
+                  </div>
+                  <textarea value={mgd.notes||""} onChange={e=>mUpd({notes:e.target.value})} placeholder="Notes..." rows={2}
+                    style={{width:"100%",background:"#0a0a1a",border:"1px solid #1e1e2e",color:"#e0e0ff",padding:"7px",borderRadius:8,fontSize:11,boxSizing:"border-box"}}/>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Limited Modal */}
+      {addLimOpen&&(
+        <div style={S.overlay} onClick={()=>setAddLimOpen(false)}>
+          <div style={{background:"#0f1525",border:"2px solid #FFD700",borderRadius:16,width:"100%",maxWidth:420,padding:18}} onClick={e=>e.stopPropagation()}>
+            <div style={{fontSize:13,fontWeight:"bold",color:"#FFD700",marginBottom:14}}>⭐ Add Limited Edition</div>
+            {[{label:"Name *",key:"name",ph:"e.g. Colosseum Bonus Disc"},{label:"Year",key:"year",ph:"2003"},{label:"Image URL (optional)",key:"imgUrl",ph:"https://..."},{label:"Notes",key:"notes",ph:"Region, condition..."}].map(f=>(
+              <div key={f.key} style={{marginBottom:10}}>
+                <div style={{fontSize:9,color:"#666",marginBottom:3}}>{f.label}</div>
+                <input value={newLim[f.key]} onChange={e=>setNewLim(p=>({...p,[f.key]:e.target.value}))} placeholder={f.ph}
+                  style={{width:"100%",background:"#0a0a1a",border:"1px solid #333",color:"#e0e0ff",padding:"6px 10px",borderRadius:8,fontSize:11,boxSizing:"border-box"}}/>
+              </div>
+            ))}
+            <div style={{marginBottom:12}}>
+              <div style={{fontSize:9,color:"#666",marginBottom:3}}>Price (€)</div>
+              <input type="number" min={0} value={newLim.price} onChange={e=>setNewLim(p=>({...p,price:parseFloat(e.target.value)||0}))}
+                style={{background:"#0a0a1a",border:"1px solid #333",color:"#00FF88",padding:"6px 10px",borderRadius:8,fontSize:13,width:90}}/>
+            </div>
+            <Check v={newLim.owned} onChange={()=>setNewLim(p=>({...p,owned:!p.owned}))} label="Already owned" color="#FFD700" small/>
+            <div style={{display:"flex",gap:8,marginTop:14}}>
+              <button onClick={addLim} style={{background:"#FFD700",border:"none",color:"#000",padding:"8px 16px",borderRadius:8,cursor:"pointer",fontSize:11,fontWeight:"bold",flex:1}}>Add</button>
+              <button onClick={()=>setAddLimOpen(false)} style={{background:"none",border:"1px solid #333",color:"#666",padding:"8px 16px",borderRadius:8,cursor:"pointer",fontSize:11}}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Page */}
+      <div style={{padding:"14px 10px"}}>
+        {/* Main tabs */}
+        <div style={{display:"flex",gap:5,marginBottom:14,overflowX:"auto",paddingBottom:4}}>
+          {[{id:"en",l:"🇬🇧 English"},{id:"jp",l:"🇯🇵 Japanese"},{id:"limited",l:"⭐ Limited"},{id:"stats",l:"📊 Stats"}].map(t=>(
+            <button key={t.id} onClick={()=>setTab(t.id)} style={{background:tab===t.id?"#E3350D":"#0f1020",border:`1px solid ${tab===t.id?"#E3350D":"#252535"}`,color:"#fff",padding:"7px 12px",borderRadius:8,cursor:"pointer",fontSize:10,letterSpacing:1,whiteSpace:"nowrap"}}>
+              {t.l}
+            </button>
+          ))}
+        </div>
+
+        {/* EN/JP */}
+        {(tab==="en"||tab==="jp")&&<>
+          <div style={{display:"flex",gap:5,marginBottom:10,flexWrap:"wrap"}}>
+            <button onClick={()=>setFilterGen(0)} style={{background:filterGen===0?"#ffffff18":"none",border:"1px solid #252535",color:filterGen===0?"#fff":"#555",padding:"3px 9px",borderRadius:20,cursor:"pointer",fontSize:9}}>All</button>
+            {gens.map(g=>(
+              <button key={g} onClick={()=>setFilterGen(g)} style={{background:filterGen===g?GEN_COLORS[g]+"33":"none",border:`1px solid ${filterGen===g?GEN_COLORS[g]:"#252535"}`,color:filterGen===g?"#fff":"#555",padding:"3px 9px",borderRadius:20,cursor:"pointer",fontSize:9}}>Gen {g}</button>
+            ))}
+          </div>
+          <div style={{display:"flex",gap:12,marginBottom:12}}>
+            <Check v={showOwned} onChange={()=>setShowOwned(p=>!p)} label="Show owned" color="#00FF88" small/>
+            <Check v={showMissing} onChange={()=>setShowMissing(p=>!p)} label="Show not owned" color="#AA88FF" small/>
+          </div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>
+            {filteredGames(tab==="en"?isOwnedEN:isOwnedJP,tab).map(game=>{
+              const gd=tab==="jp"?getJP(game.id):getEN(game.id);
+              const owned=tab==="jp"?isOwnedJP(game.id):isOwnedEN(game.id);
+              const bPct=game.badges.length>0?(gd.badges.length/game.badges.length)*100:0;
+              const dPct=game.dex>0?((gd.dex||0)/game.dex)*100:0;
+              const shn=(gd.shinies||[]).reduce((s,x)=>s+(x.count||1),0);
+              return(
+                <div key={game.id} onClick={()=>{setModal({id:game.id,type:tab});setMTab("badges");}}
+                  style={{background:"linear-gradient(135deg,#0f1525,#0a0a1a)",border:`1px solid ${owned?game.color+"66":"#1e1e2e"}`,borderRadius:12,padding:10,cursor:"pointer",opacity:owned?1:0.55,position:"relative",overflow:"hidden",transition:"all 0.2s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.borderColor=game.color;e.currentTarget.style.opacity="1";}}
+                  onMouseLeave={e=>{e.currentTarget.style.borderColor=owned?game.color+"66":"#1e1e2e";e.currentTarget.style.opacity=owned?"1":"0.55";}}>
+                  <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:`linear-gradient(90deg,${game.color},transparent)`,opacity:owned?1:0.15}}/>
+                  <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
+                    <BoxArt id={game.id} name={game.name} color={game.color} size={50}/>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:8,color:"#444",marginBottom:2}}>GEN {game.gen} · {game.year}</div>
+                      <div style={{fontSize:11,fontWeight:"bold",color:owned?"#fff":"#555",marginBottom:5,lineHeight:1.3}}>{game.name}</div>
+                      {owned&&<>
+                        {game.badges.length>0&&<div style={{marginBottom:3}}>
+                          <div style={{display:"flex",justifyContent:"space-between",fontSize:8,color:"#555",marginBottom:1}}>
+                            <span>🏅</span><span style={{color:game.color}}>{gd.badges.length}/{game.badges.length}</span>
+                          </div>
+                          <div style={{background:"#1a1a2e",borderRadius:3,height:3}}><div style={{width:`${bPct}%`,height:"100%",background:game.color,borderRadius:3}}/></div>
+                        </div>}
+                        {game.dex>0&&<div>
+                          <div style={{display:"flex",justifyContent:"space-between",fontSize:8,color:"#555",marginBottom:1}}>
+                            <span>📖</span><span style={{color:"#4FC3F7"}}>{gd.dex||0}/{game.dex}</span>
+                          </div>
+                          <div style={{background:"#1a1a2e",borderRadius:3,height:3}}><div style={{width:`${dPct}%`,height:"100%",background:"#4FC3F7",borderRadius:3}}/></div>
+                        </div>}
+                        <div style={{display:"flex",gap:6,marginTop:4,fontSize:8}}>
+                          {shn>0&&<span style={{color:"#FFD700"}}>✨{shn}</span>}
+                          {gd.hasBox&&<span style={{color:"#AA88FF"}}>📦</span>}
+                          {(gd.price||0)>0&&<span style={{color:"#00FF88"}}>€{gd.price}</span>}
+                          {tab==="jp"&&(gd.jpPrice||0)>0&&<span style={{color:"#FF4488"}}>¥{gd.jpPrice}</span>}
+                        </div>
+                      </>}
+                      {!owned&&gd.wishlist&&<div style={{fontSize:8,color:"#AA88FF"}}>🎯 On wishlist</div>}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>}
+
+        {/* Limited */}
+        {tab==="limited"&&(
+          <div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{fontSize:10,color:"#666"}}>{(store.limited||[]).length} items · {st.lO} owned</div>
+              <button onClick={()=>setAddLimOpen(true)} style={{background:"#FFD700",border:"none",color:"#000",padding:"7px 14px",borderRadius:8,cursor:"pointer",fontSize:11,fontWeight:"bold"}}>+ Add Item</button>
+            </div>
+            {(store.limited||[]).length===0
+              ?<div style={{color:"#333",textAlign:"center",padding:36,fontSize:12}}>No limited editions yet.<br/><span style={{fontSize:10,color:"#222"}}>Add items like Colosseum Bonus Disc, Celebi disc, etc.</span></div>
+              :<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}}>
+                {(store.limited||[]).map(item=>(
+                  <div key={item.id} style={{background:"linear-gradient(135deg,#1a1020,#0a0a1a)",border:`1px solid ${item.owned?"#FFD70066":"#1e1e2e"}`,borderRadius:12,padding:10,position:"relative",overflow:"hidden"}}>
+                    <div style={{position:"absolute",top:0,left:0,right:0,height:3,background:"linear-gradient(90deg,#FFD700,transparent)",opacity:item.owned?1:0.15}}/>
+                    <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
+                      {item.imgUrl
+                        ?<img src={item.imgUrl} alt={item.name} onError={e=>e.target.style.display="none"} style={{width:50,height:65,objectFit:"cover",borderRadius:6,border:"1px solid #FFD70033",flexShrink:0,background:"#111"}}/>
+                        :<div style={{width:50,height:65,background:"#FFD70011",borderRadius:6,border:"1px solid #FFD70033",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><span style={{fontSize:18}}>⭐</span></div>
+                      }
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:8,color:"#666",marginBottom:2}}>{item.year||"—"}</div>
+                        <div style={{fontSize:11,fontWeight:"bold",color:item.owned?"#FFD700":"#666",marginBottom:5,lineHeight:1.3}}>{item.name}</div>
+                        {item.notes&&<div style={{fontSize:8,color:"#555",marginBottom:5,lineHeight:1.4}}>{item.notes}</div>}
+                        <div style={{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}}>
+                          <Check v={item.owned} onChange={()=>updLim(item.id,{owned:!item.owned})} label="Owned" color="#FFD700" small/>
+                          {(item.price||0)>0&&<span style={{fontSize:8,color:"#00FF88"}}>€{item.price}</span>}
+                          <button onClick={()=>rmLim(item.id)} style={{background:"none",border:"1px solid #222",color:"#444",borderRadius:4,padding:"1px 5px",cursor:"pointer",fontSize:8,marginLeft:"auto"}}>✕</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            }
+          </div>
+        )}
+
+        {/* Stats */}
+        {tab==="stats"&&(
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+              {[{l:"English games",v:st.enO,i:"🇬🇧",c:"#4FC3F7"},{l:"Japanese games",v:st.jpO,i:"🇯🇵",c:"#FF4488"},{l:"Limited editions",v:st.lO,i:"⭐",c:"#FFD700"},{l:"Total shinies",v:st.shn,i:"✨",c:"#C0C0FF"},{l:"EN spend",v:`€${st.enP}`,i:"💶",c:"#00FF88"},{l:"JP spend",v:`¥${st.jpP}`,i:"🇯🇵",c:"#FF4488"}].map(x=>(
+                <div key={x.l} style={{background:"#0f1525",border:`1px solid ${x.c}22`,borderRadius:12,padding:12,textAlign:"center"}}>
+                  <div style={{fontSize:20}}>{x.i}</div>
+                  <div style={{fontSize:18,fontWeight:"bold",color:x.c}}>{x.v}</div>
+                  <div style={{fontSize:8,color:"#444",marginTop:3}}>{x.l}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{background:"#0f1525",border:"1px solid #1a1a2e",borderRadius:12,padding:14}}>
+              <div style={{fontSize:10,color:"#666",marginBottom:10,letterSpacing:1}}>PROGRESS BY GENERATION</div>
+              {gens.map(gen=>{
+                const gl=GAMES.filter(g=>g.gen===gen);
+                const enO=gl.filter(g=>isOwnedEN(g.id)).length;
+                const jpO=gl.filter(g=>isOwnedJP(g.id)).length;
+                const tb=gl.reduce((s,g)=>s+g.badges.length,0);
+                const eb=gl.reduce((s,g)=>s+getEN(g.id).badges.length+getJP(g.id).badges.length,0);
+                return(
+                  <div key={gen} style={{marginBottom:10}}>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:9,marginBottom:3}}>
+                      <span style={{color:GEN_COLORS[gen]}}>Gen {gen} <span style={{color:"#444"}}>EN:{enO} JP:{jpO}/{gl.length}</span></span>
+                      <span style={{color:"#555"}}>{eb}/{tb} badges</span>
+                    </div>
+                    <div style={{background:"#1a1a2e",borderRadius:4,height:6}}>
+                      <div style={{width:tb>0?`${(eb/tb)*100}%`:"0%",height:"100%",background:GEN_COLORS[gen],borderRadius:4}}/>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{background:"#0f1525",border:"1px solid #1a1a2e",borderRadius:12,padding:14}}>
+              <div style={{fontSize:10,color:"#666",marginBottom:10,letterSpacing:1}}>ALL SHINIES</div>
+              {GAMES.flatMap(g=>[...(getEN(g.id).shinies||[]).map(s=>({...s,gn:g.name+" (EN)",c:g.color})),...(getJP(g.id).shinies||[]).map(s=>({...s,gn:g.name+" 🇯🇵",c:g.color}))]).length===0
+                ?<div style={{color:"#333",fontSize:10,textAlign:"center",padding:8}}>No shinies registered</div>
+                :GAMES.flatMap(g=>[...(getEN(g.id).shinies||[]).map(s=>({...s,gn:g.name+" (EN)",c:g.color})),...(getJP(g.id).shinies||[]).map(s=>({...s,gn:g.name+" 🇯🇵",c:g.color}))]).map((sh,i)=>(
+                  <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"4px 0",borderBottom:"1px solid #111",fontSize:10}}>
+                    <span>⭐ <span style={{color:"#FFD700"}}>{sh.name}</span>{sh.count>1&&<span style={{color:"#555"}}> ×{sh.count}</span>}</span>
+                    <span style={{color:sh.c,fontSize:9}}>{sh.gn}</span>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
